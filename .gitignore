@@ -1,0 +1,17 @@
+.DS_Store
+data/thor_offline_data
+data/thor_v1_offline_data
+runs/
+*.pyc
+.idea/
+kg_prep/kg_data/thor_v1_objects.txt
+kg_prep/kg_data/relationships.json
+kg_prep/kg_data/relationship_alias.txt
+kg_prep/verify_files.py
+kg_prep/kg_data/all_objects.txt
+kg_prep/kg_data/object_relationship_count.json
+kg_prep/kg_data/relationship_count.json
+kg_prep/kg_data/top_subject_relationships/
+kg_prep/kg_data/adjmat.dat
+kg_prep/kg_data/adjmat_w.dat
+kg_prep/kg_data/old_adj/*

@@ -1,0 +1,12 @@
+{
+    "GreaterThan/1/spl": 0.20595724021000805,
+    "GreaterThan/1/success": 0.631,
+    "GreaterThan/5/spl": 0.19207737652298001,
+    "GreaterThan/5/success": 0.4517857142857143,
+    "done_count": 0.997,
+    "ep_length": 19.214,
+    "spl": 0.20595724021000805,
+    "success": 0.631,
+    "total_reward": 3.5532099999999978,
+    "total_time": 0.22277881097793578
+}
