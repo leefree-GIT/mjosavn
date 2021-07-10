@@ -18,7 +18,7 @@ from utils.net_util import ScalarMeanTracker
 from main_eval import main_eval
 
 from runners import nonadaptivea3c_train, nonadaptivea3c_val, savn_train, savn_val
-
+from tqdm import tqdm
 
 os.environ["OMP_NUM_THREADS"] = "1"
 
@@ -27,7 +27,7 @@ def main():
     setproctitle.setproctitle("Train/Test Manager")
     args = flag_parser.parse_arguments()
 
-    if args.model == "SAVN":
+    if "SAVN" in args.model:
         args.learned_loss = True
         args.num_steps = 6
         target = savn_val if args.eval else savn_train
@@ -114,11 +114,13 @@ def main():
 
     save_entire_model = 0
     try:
+        pbar = tqdm(total = args.max_ep)
         while train_total_ep < args.max_ep:
 
             train_result = train_res_queue.get()
             train_scalars.add_scalars(train_result)
             train_total_ep += 1
+            pbar.update(1)
             n_frames += train_result["ep_length"]
             if (train_total_ep % train_thin) == 0:
                 log_writer.add_scalar("n_frames", n_frames, train_total_ep)

@@ -1,9 +1,15 @@
 .DS_Store
+data/
 data/thor_offline_data
 data/thor_v1_offline_data
+trained_models/
 runs/
 *.pyc
 .idea/
+__pycache__/
+*/__pycache__/
+*.log
+pretrained_models/
 kg_prep/kg_data/thor_v1_objects.txt
 kg_prep/kg_data/relationships.json
 kg_prep/kg_data/relationship_alias.txt

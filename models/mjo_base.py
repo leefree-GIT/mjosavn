@@ -24,11 +24,11 @@ def normalize_adj(adj):
         #(d_mat_inv_sqrt @ adj @ d_mat_inv_sqrt).tocoo()
 
 
-class MJOLNIR_O(torch.nn.Module):
+class MJOBASE(torch.nn.Module):
     def __init__(self, args):
         action_space = args.action_space
         hidden_state_sz = args.hidden_state_sz
-        super(MJOLNIR_O, self).__init__()
+        super(MJOBASE, self).__init__()
 
         # get and normalize adjacency matrix.
         np.seterr(divide='ignore')
@@ -126,11 +126,20 @@ class MJOLNIR_O(torch.nn.Module):
         x = self.final_mapping(x)
         return x
 
-    def embedding(self, state, target, action_probs, objbb):
+    def embedding(self, state, target, action_probs, objbb, params = None):
         state = state[None,:,:,:]
         objstate, class_onehot = self.list_from_raw_obj(objbb, target)
         action_embedding_input = action_probs
-        action_embedding = F.relu(self.embed_action(action_embedding_input))
+        if params is None:
+            action_embedding = F.relu(self.embed_action(action_embedding_input))
+        else:
+            action_embedding = F.relu(
+                    F.linear(
+                        action_embedding_input,
+                        weight=params["embed_action.weight"],
+                        bias=params["embed_action.bias"],
+                    )
+                )
         x = objstate
         x = x.view(1, -1)
         x = torch.cat((x, action_embedding), dim=1)
@@ -138,11 +147,46 @@ class MJOLNIR_O(torch.nn.Module):
 
         return out, None
 
-    def a3clstm(self, embedding, prev_hidden):
-        hx, cx = self.lstm(embedding, prev_hidden)
-        x = hx
-        actor_out = self.actor_linear(x)
-        critic_out = self.critic_linear(x)
+    def a3clstm(self, embedding, prev_hidden, params=None):
+        if params is None:
+            hx, cx = self.lstm(embedding, prev_hidden)
+            x = hx
+            actor_out = self.actor_linear(x)
+            critic_out = self.critic_linear(x)
+
+        else:
+            hx, cx = self._backend.LSTMCell(
+                embedding,
+                prev_hidden,
+                params["lstm.weight_ih"],
+                params["lstm.weight_hh"],
+                params["lstm.bias_ih"],
+                params["lstm.bias_hh"],
+            )
+
+            # Change for pytorch 1.01
+            # hx, cx = nn._VF.lstm_cell(
+            #     embedding,
+            #     prev_hidden,
+            #     params["lstm.weight_ih"],
+            #     params["lstm.weight_hh"],
+            #     params["lstm.bias_ih"],
+            #     params["lstm.bias_hh"],
+            # )
+
+            x = hx
+
+            critic_out = F.linear(
+                x,
+                weight=params["critic_linear.weight"],
+                bias=params["critic_linear.bias"],
+            )
+            actor_out = F.linear(
+                x,
+                weight=params["actor_linear.weight"],
+                bias=params["actor_linear.bias"],
+            )
+
         return actor_out, critic_out, (hx, cx)
 
     def forward(self, model_input, model_options):
@@ -150,10 +194,12 @@ class MJOLNIR_O(torch.nn.Module):
         objbb = model_input.objbb
         (hx, cx) = model_input.hidden
 
+        params = model_options.params
+
         target = model_input.target_class_embedding
         action_probs = model_input.action_probs
-        x, image_embedding = self.embedding(state, target, action_probs, objbb)
-        actor_out, critic_out, (hx, cx) = self.a3clstm(x, (hx, cx))
+        x, image_embedding = self.embedding(state, target, action_probs, objbb, params)
+        actor_out, critic_out, (hx, cx) = self.a3clstm(x, (hx, cx), params)
 
         return ModelOutput(
             value=critic_out,

@@ -276,7 +276,7 @@ def parse_arguments():
 
     parser.add_argument("--test_or_val", default="test", help="test or val")
     parser.add_argument("--partial_reward", default=True, help="using partial reward for parent objects")
-    parser.add_argument("--vis",default=True, help="whether to store action log for visualization")
+    parser.add_argument("--vis",default=False, help="whether to store action log for visualization")
     parser.add_argument("--room_results", default=False, help="whether to save results room-wise during evaluation")
     args = parser.parse_args()
 
