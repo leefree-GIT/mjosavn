@@ -9,6 +9,7 @@ runs/
 __pycache__/
 */__pycache__/
 *.log
+*.json
 pretrained_models/
 kg_prep/kg_data/thor_v1_objects.txt
 kg_prep/kg_data/relationships.json
