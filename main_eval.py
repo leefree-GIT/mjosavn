@@ -35,7 +35,7 @@ def main_eval(args, create_shared_model, init_agent):
     processes = []
 
     res_queue = mp.Queue()
-    if args.model == "SAVN":
+    if "SAVN" in args.model:
         args.learned_loss = True
         args.num_steps = 6
         target = savn_val
